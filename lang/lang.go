@@ -35,6 +35,8 @@ var (
 	// More info available on the `LocalizePluralKey` function.
 	XN = LocalizePluralKey
 
+	preferredLanguage *fyne.Locale
+
 	bundle    *i18n.Bundle
 	localizer *i18n.Localizer
 
@@ -159,6 +161,15 @@ func AddTranslationsFS(fs embed.FS, dir string) (retErr error) {
 	return retErr
 }
 
+// SetPreferredLanguage allows an app to set the preferred language for translations, overwriting the System Locale.
+func SetPreferredLanguage(languageKey string) error {
+	tag, err := language.Parse(languageKey)
+	fyneLocale := fyne.Locale(tag.String())
+	forcedLanguage = &fyneLocale
+    updateLocalizer()
+	return err
+}
+
 func addLanguage(data []byte, name string) error {
 	f, err := bundle.ParseMessageFileBytes(data, name)
 	translated = append(translated, f.Tag)
@@ -197,6 +208,9 @@ func updateLocalizer() {
 	if err != nil {
 		fyne.LogError("Failed to load user locales", err)
 		all = []string{"en"}
+	}
+	if preferredLanguage != nil {
+		all = append([]string{preferredLanguage.String()}, all...)
 	}
 	str := closestSupportedLocale(all).LanguageString()
 	setupLang(str)
