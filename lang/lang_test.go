@@ -81,8 +81,6 @@ func TestSetPreferredLanguage(t *testing.T) {
 	_ = AddTranslations(fyne.NewStaticResource("en.json", []byte(`{
   "Test": "Match"
 }`)))
-	setupLang("en")
-
 	_ = AddTranslations(fyne.NewStaticResource("fr.json", []byte(`{
   "Test2": "Match2"
 }`)))
