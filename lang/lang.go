@@ -165,7 +165,7 @@ func AddTranslationsFS(fs embed.FS, dir string) (retErr error) {
 func SetPreferredLanguage(languageKey string) error {
 	tag, err := language.Parse(languageKey)
 	fyneLocale := fyne.Locale(tag.String())
-	forcedLanguage = &fyneLocale
+	preferredLanguage = &fyneLocale
     updateLocalizer()
 	return err
 }
