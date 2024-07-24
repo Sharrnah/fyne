@@ -76,3 +76,18 @@ func TestLocalizePluralKey_Fallback(t *testing.T) {
 	assert.Equal(t, "Apple", XN("appleID", "Apple", 1))
 	assert.Equal(t, "Apples", XN("appleID", "Apple", 2))
 }
+
+func TestSetPreferredLanguage(t *testing.T) {
+	_ = AddTranslations(fyne.NewStaticResource("en.json", []byte(`{
+  "Test": "Match"
+}`)))
+	setupLang("en")
+
+	_ = AddTranslations(fyne.NewStaticResource("fr.json", []byte(`{
+  "Test2": "Match2"
+}`)))
+    setupLang("fr")
+	assert.Equal(t, "Match2", L("Test2"))
+    SetPreferredLanguage("en")
+	assert.Equal(t, "Match", L("Test"))
+}
