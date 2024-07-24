@@ -166,7 +166,7 @@ func SetPreferredLanguage(languageKey string) error {
 	tag, err := language.Parse(languageKey)
 	fyneLocale := fyne.Locale(tag.String())
 	preferredLanguage = &fyneLocale
-    updateLocalizer()
+	updateLocalizer()
 	return err
 }
 
