@@ -7,6 +7,7 @@ import (
 	"embed"
 	"encoding/json"
 	"log"
+	"sort"
 	"strings"
 	"text/template"
 
@@ -16,7 +17,6 @@ import (
 	"fyne.io/fyne/v2"
 
 	"golang.org/x/text/language"
-	"slices"
 )
 
 var (
@@ -209,7 +209,7 @@ func fallbackWithData(key, fallback string, data any) string {
 	return str.String()
 }
 
-func orderLanguages(a, b language.Tag) int {
+func orderLanguages(a, b language.Tag) bool {
 	indexA := -1
 	indexB := -1
 	for i, l := range languageOrder {
@@ -222,17 +222,17 @@ func orderLanguages(a, b language.Tag) int {
 	}
 	// Order both languages as defined in languageOrder
 	if indexA != -1 && indexB != -1 {
-		return indexA - indexB
+		return indexA < indexB
 	}
 	// If it is the only language in languageOrder, it comes first
 	if indexA != -1 {
-		return -1
+		return true
 	}
 	if indexB != -1 {
-		return 1
+		return false
 	}
 	// If no language is in languageOrder, sort alphabetically
-	return strings.Compare(a.String(), b.String())
+	return strings.Compare(a.String(), b.String()) < 0
 }
 
 // A utility for setting up languages - available to unit tests for overriding system
@@ -243,8 +243,8 @@ func setupLang(lang string) {
 // updateLocalizer Finds the closest translation from the user's locale list and sets it up
 func updateLocalizer() {
 	// Sort the translated slice using the orderLanguages function
-	slices.SortStableFunc(translated, func(a, b language.Tag) int {
-		return orderLanguages(a, b)
+	sort.SliceStable(translated, func(i, j int) bool {
+		return orderLanguages(translated[i], translated[j])
 	})
 
 	all, err := locale.GetLocales()

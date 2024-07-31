@@ -98,9 +98,9 @@ func TestSetLanguageOrder(t *testing.T) {
   "Test2": "Match2"
 }`)))
 	setupLang("xyz") // invalid language to test fallback
-	SetLanguageOrder("en")
+	SetLanguageOrder([]string{"en"})
 	assert.Equal(t, "Match", L("Test"))
-	SetLanguageOrder("fr")
+	SetLanguageOrder([]string{"fr"})
 	assert.Equal(t, "Match2", L("Test2"))
 	setupLang("en")
 	assert.Equal(t, "Match", L("Test"))
