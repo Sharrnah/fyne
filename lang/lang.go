@@ -16,6 +16,7 @@ import (
 	"fyne.io/fyne/v2"
 
 	"golang.org/x/text/language"
+	"slices"
 )
 
 var (
@@ -35,7 +36,11 @@ var (
 	// More info available on the `LocalizePluralKey` function.
 	XN = LocalizePluralKey
 
-	preferredLanguage *fyne.Locale
+	// This defines an order in which it will try to find a fallback in case localizer does not find a match.
+	// All other languages will be in order as the system reads them (which is most likely alphabetical).
+	languageOrder = []string{"en"}
+
+	preferredLanguage string
 
 	bundle    *i18n.Bundle
 	localizer *i18n.Localizer
@@ -161,13 +166,20 @@ func AddTranslationsFS(fs embed.FS, dir string) (retErr error) {
 	return retErr
 }
 
-// SetPreferredLanguage allows an app to set the preferred language for translations, overwriting the System Locale.
-func SetPreferredLanguage(languageKey string) error {
-	tag, err := language.Parse(languageKey)
-	fyneLocale := fyne.Locale(tag.String())
-	preferredLanguage = &fyneLocale
+// SetLanguageOrder allows an app to set the order in which translations are checked in case no locale matches.
+// Since 2.6
+func SetLanguageOrder(order []string) {
+	languageOrder = order
 	updateLocalizer()
-	return err
+}
+
+
+// SetPreferredLocale allows an app to set the preferred locale for translations, overwriting the System Locale.
+// locale can be in format en_US_someVariant, en_US, en-US-someVariant, en-US, en
+// Since 2.6
+func SetPreferredLocale(locale string) {
+	preferredLanguage = locale
+	updateLocalizer()
 }
 
 func addLanguage(data []byte, name string) error {
@@ -197,6 +209,32 @@ func fallbackWithData(key, fallback string, data any) string {
 	return str.String()
 }
 
+func orderLanguages(a, b language.Tag) int {
+	indexA := -1
+	indexB := -1
+	for i, l := range languageOrder {
+		if a.String() == l {
+			indexA = i
+		}
+		if b.String() == l {
+			indexB = i
+		}
+	}
+	// Order both languages as defined in languageOrder
+	if indexA != -1 && indexB != -1 {
+		return indexA - indexB
+	}
+	// If it is the only language in languageOrder, it comes first
+	if indexA != -1 {
+		return -1
+	}
+	if indexB != -1 {
+		return 1
+	}
+	// If no language is in languageOrder, sort alphabetically
+	return strings.Compare(a.String(), b.String())
+}
+
 // A utility for setting up languages - available to unit tests for overriding system
 func setupLang(lang string) {
 	localizer = i18n.NewLocalizer(bundle, lang)
@@ -204,13 +242,18 @@ func setupLang(lang string) {
 
 // updateLocalizer Finds the closest translation from the user's locale list and sets it up
 func updateLocalizer() {
+	// Sort the translated slice using the orderLanguages function
+	slices.SortStableFunc(translated, func(a, b language.Tag) int {
+		return orderLanguages(a, b)
+	})
+
 	all, err := locale.GetLocales()
 	if err != nil {
 		fyne.LogError("Failed to load user locales", err)
 		all = []string{"en"}
 	}
-	if preferredLanguage != nil {
-		all = append([]string{preferredLanguage.String()}, all...)
+	if preferredLanguage != "" {
+		all = []string{preferredLanguage}
 	}
 	str := closestSupportedLocale(all).LanguageString()
 	setupLang(str)
