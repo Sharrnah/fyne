@@ -97,11 +97,10 @@ func TestSetLanguageOrder(t *testing.T) {
 	_ = AddTranslations(fyne.NewStaticResource("fr.json", []byte(`{
   "Test2": "Match2"
 }`)))
-	setupLang("xyz") // invalid language to test fallback
-	SetLanguageOrder([]string{"en"})
-	assert.Equal(t, "Match", L("Test"))
-	SetLanguageOrder([]string{"fr"})
-	assert.Equal(t, "Match2", L("Test2"))
 	setupLang("en")
+	SetPreferredLocale("xyz") // invalid language to test fallback
+	SetLanguageOrder([]string{"fr","en"})
+	assert.Equal(t, "Match2", L("Test2"))
+	SetLanguageOrder([]string{"en", "fr"})
 	assert.Equal(t, "Match", L("Test"))
 }
