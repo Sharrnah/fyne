@@ -37,7 +37,7 @@ var (
 	XN = LocalizePluralKey
 
 	// This defines an order in which it will try to find a fallback in case localizer does not find a match.
-	// All other languages will be in order as the system reads them (which is most likely alphabetical).
+	// All other languages will be in alphabetical order.
 	languageOrder = []string{"en"}
 
 	preferredLanguage string
