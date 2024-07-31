@@ -173,7 +173,6 @@ func SetLanguageOrder(order []string) {
 	updateLocalizer()
 }
 
-
 // SetPreferredLocale allows an app to set the preferred locale for translations, overwriting the System Locale.
 // locale can be in format en_US_someVariant, en_US, en-US-someVariant, en-US, en
 // Since 2.6
